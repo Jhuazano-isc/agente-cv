@@ -1,0 +1,55 @@
+name: CV Agent CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalando Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Instalando dependencias
+        run: pip install -r requirements.txt
+
+      - name: Levantar servidor y correr harness de evaluación
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+          DEFAULT_OPENAI_MODEL: ${{ secrets.DEFAULT_OPENAI_MODEL }}
+          API_URL: http://127.0.0.1:8000/v1/responses
+        run: |
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          for i in $(seq 1 15); do
+            curl -sf http://127.0.0.1:8000/health && break
+            sleep 1
+          done
+          python -m app.eval.run_eval
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Seteando flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Prueba de vida
+        run: |
+          sleep 30
+          curl -f https://agent-cv-wazy-25358.fly.dev/health

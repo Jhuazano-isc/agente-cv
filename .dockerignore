@@ -1,0 +1,11 @@
+environment/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.env
+.atl/
+.DS_Store
+app/storage/*.db
+example.env
+README.md

@@ -1,0 +1,7 @@
+environment/
+.env
+__pycache__/
+*.pyc
+.atl/
+.DS_Store
+app/storage/*.db

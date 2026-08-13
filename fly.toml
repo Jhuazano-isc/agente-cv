@@ -1,0 +1,20 @@
+# fly.toml app configuration file generated for agent-cv-wazy-25358 on 2026-08-13T14:59:35-06:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'agent-cv-wazy-25358'
+primary_region = 'lax'
+
+[build]
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 512
